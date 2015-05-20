@@ -3,6 +3,7 @@ package tests;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -31,8 +32,8 @@ public class CustomerServiceTests {
 	}
 	
 	@Test
-	public void testFindByField() {		
-		List<Customer> res = cs.findByField("id", "2");
+	public void testFindByField() {
+		List<Customer> res = cs.findByField("id", 2);
 		
 		assertNotNull("Result can't be null", res);
 		assertEquals(1, res.size());
@@ -65,11 +66,11 @@ public class CustomerServiceTests {
 	@Test
 	public void testAddProductToAllCustomers(){
 		List<Customer> list = DataProducer.getTestData(10);
-		Product p = new Product(10, "Test product", 1);
+		Product p = new Product(11, "Test product", 1);
 		
 		int amount = list.stream().mapToInt(c -> c.getBoughtProducts().size()).sum();
 		cs.addProductToAllCustomers(p);
-		int amountWithNew = list.stream().mapToInt(c -> c.getBoughtProducts().size()).sum();
+		int amountWithNew = cs.allCustomers().stream().mapToInt(c -> c.getBoughtProducts().size()).sum();
 		
 		assertNotEquals(amount, amountWithNew);
 	}
@@ -88,16 +89,16 @@ public class CustomerServiceTests {
 	public void testAvgOrdersWithoutEmpty(){
 		List<Customer> list = DataProducer.getTestData(10);
 		
-		double average = list.stream().filter(c -> c.getBoughtProducts().size() != 0).mapToDouble(c -> c.getBoughtProducts().stream().mapToDouble(Product::getPrice).sum()).sum();
+		double average = list.stream().filter(c -> c.getBoughtProducts().size() != 0).mapToDouble(c -> c.getBoughtProducts().stream().mapToDouble(Product::getPrice).sum()).sum() / list.stream().filter(c -> c.getBoughtProducts().size() > 0).collect(Collectors.toList()).size();
 		double result = cs.avgOrders(false);
 		
-		assertEquals(average/list.size(), result, 0.01);
+		assertEquals(average, result, 0.01);
 	}
 	
 	@Test
 	public void testWasProductBought(){
-		Product p1 = new Product(1, "Product: 1", 0.1);
-		Product p2 = new Product(10, "Test product", 1);
+		Product p1 = new Product(10, "Product: 10", 1);
+		Product p2 = new Product(11, "Test product", 1);
 		
 		assertEquals(true, cs.wasProductBought(p1));
 		assertEquals(false, cs.wasProductBought(p2));
@@ -105,16 +106,16 @@ public class CustomerServiceTests {
 	
 	@Test
 	public void testCountBuys(){
-		Product p = new Product(1, "Product: 1", 0.1);
+		Product p = new Product(9, "Product: 9", 0.9);
 		
-		assertEquals(10, cs.countBuys(p));
+		assertEquals(2, cs.countBuys(p));
 	}
 	
 	@Test
 	public void testCountCustomersWhoBought(){
-		Product p = new Product(2, "Product: 2", 0.2);
+		Product p = new Product(9, "Product: 9", 0.9);
 		
-		assertEquals(9, cs.countCustomersWhoBought(p));
+		assertEquals(2, cs.countCustomersWhoBought(p));
 	}
 	
 }
