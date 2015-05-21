@@ -1,5 +1,6 @@
 package services;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +33,9 @@ public class CustomerService implements CustomerServiceInterface {
 	public List<Customer> findByField(String fieldName, Object value) {
 		return customers.stream().filter(c -> {
 			try {
-				return c.getClass().getDeclaredField(fieldName).equals(value);
+				Field f = c.getClass().getDeclaredField(fieldName);
+				f.setAccessible(true);
+				return f.get(c).equals(value);
 			} catch (Exception e){
 				return false;
 			}
